@@ -1,0 +1,55 @@
+version: '3.8'
+
+# Services
+services:
+
+    # PHP Service
+    php:
+        build: /home/chr/mywebserver/
+        volumes:
+            - /home/chr/mywebserver/php-files:/var/www/html:rw
+        depends_on:
+            - mariadb
+
+    # Nginx Service
+    nginx-reverse:
+        image: nginx:latest
+        ports:
+            - 80:80
+        links:
+            - php
+        volumes:
+            - /home/chr/mywebserver/nginx-reverse/conf.d:/etc/nginx/conf.d:rw
+            - /home/chr/mywebserver/nginx-reverse/logs:/var/log/nginx:rw
+    nginx:
+        image: nginx:latest
+        ports:
+            - 2022:2022
+        links:
+            - php
+        volumes:
+            - /home/chr/mywebserver/php-files:/var/www/html:rw
+            - /home/chr/mywebserver/nginx/conf.d:/etc/nginx/conf.d:rw
+            - /home/chr/mywebserver/nginx/logs:/var/log/nginx:rw
+
+        depends_on:
+            - php
+
+    # MariaDB Service
+    mariadb:
+        image: mariadb:10.9
+        environment:
+            MYSQL_ROOT_PASSWORD: P@ssw0rd
+              #you most change this password
+        volumes:
+            - /home/chr/mywebserver/mariadb:/var/lib/mysql:rw
+
+    # phpMyAdmin Service
+    phpmyadmin:
+        image: phpmyadmin/phpmyadmin:latest
+        ports:
+            - 8080:80
+        environment:
+            PMA_HOST: mariadb
+        depends_on:
+            - mariadb
